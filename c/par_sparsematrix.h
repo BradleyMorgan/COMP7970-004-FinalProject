@@ -20,7 +20,7 @@ printf("%i:%d:%s(): ", rank, __LINE__, __func__); \
 printf(msg, ##args); \
 } while(0)
 
-#define DEBUG 9  // remove to disable verbose output
+//#define DEBUG 9  // remove to disable verbose output
 
 using namespace std;
 
@@ -72,7 +72,7 @@ public:
     map<int,double> pickInstanceFromIsolated(stack <int> &isolated);
     map<int,double> getInstanceFromMatrix(int instanceIndex);
     
-    int getRelevantInstanceSetByFeatureIndexAndCentroid(map<int,double> &centroid, int *relevantInstanceSet);
+    set<int> getRelevantInstanceSetByFeatureIndexAndCentroid(map<int,double> &centroid);
     
     double calculateSimilarity(int instanceIndex, map<int,double> &centroid);
     

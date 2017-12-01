@@ -29,9 +29,9 @@ int main(int argc, const char *argv[]) {
     
     MPI_Barrier(MPI_COMM_WORLD);
     
-    //if(rank == 0) {
+    if(rank == 0) {
         dbprintf ("\n\nIt took me %ld clicks (%f seconds).\n\n",t,((float)t)/CLOCKS_PER_SEC);
-    //}
+    }
     
     MPI_Finalize();
     

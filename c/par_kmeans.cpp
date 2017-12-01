@@ -112,55 +112,20 @@ double kmeans::assignCluster(vector< map<int,double> > &centroids, int * idx, st
     double Similarity;
     
     memset(idx, 0, sizeof(int) * instanceSize);
-    memset(maxSimilarity, 0, sizeof(double)*instanceSize * 2);
+    memset(maxSimilarity, 0, sizeof(double)*instanceSize);
     
-    int *RelevantInstanceSet = (int *)malloc(sizeof(int)*instanceSize);
-    
-    dbprintf("assigning set of size %d\n", instanceSize);
-    
+    set <int> RelevantInstanceSet;
     for (int i=0; i<centroids.size(); i++){
-        
-        int count = sparseMatrix->getRelevantInstanceSetByFeatureIndexAndCentroid(centroids[i], RelevantInstanceSet);
-        
-        #ifdef DEBUG
-            dbprintf("got %d sets of relevant instances\n", count);
-        #endif
-
-        // now we have a list of integers corresponding to edge records in the data
-        // iterate through it and calculate similarity...
-        
-        for(int j=0; j<count; j++) {
-            
-            instanceIndex = RelevantInstanceSet[j];
-
-            #ifdef DEBUG
-                dbprintf("instanceIndex = RelavantInstanceSet[%d] = %d\n", j, RelevantInstanceSet[j]);
-            #endif
-
+        RelevantInstanceSet = sparseMatrix->getRelevantInstanceSetByFeatureIndexAndCentroid(centroids[i]);
+        for(it = RelevantInstanceSet.begin(); it!=RelevantInstanceSet.end(); it++){
+            instanceIndex = *it;
             Similarity = sparseMatrix->calculateSimilarity(instanceIndex, centroids[i]);
-            
-            #ifdef DEBUG
-                dbprintf("Similarity = sparseMatrix->calculateSimilarity(%d, centroids[%d]) = %f\n", instanceIndex, i, Similarity);
-            #endif
-
-            // assign the largest index found so far
-            
             if (Similarity > maxSimilarity[instanceIndex]){
-                
-		        #ifdef DEBUG
-		        #if DEBUG > 6
-                    dbprintf("new similarity for instanceIndex = %d\n", instanceIndex);
-                #endif
-		        #endif
-
                 maxSimilarity[instanceIndex] = Similarity;
-                
                 idx[instanceIndex] = i;
-                
             }
-            
         }
-        
+        RelevantInstanceSet.clear();
     }
     
     while(!isolated.empty()) {

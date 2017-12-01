@@ -99,13 +99,13 @@ map<int,double> SparseMatrix::getInstanceFromMatrix(int instanceIndex) {
     
 }
 
-int SparseMatrix::getRelevantInstanceSetByFeatureIndexAndCentroid(map<int,double> &centroid, int *relevantInstanceSet) {
+set<int> SparseMatrix::getRelevantInstanceSetByFeatureIndexAndCentroid(map<int,double> &centroid) {
     
     // assigns a list of integers corresponding to the edge record number 0-n
     // returns the count of integers in the list
     // this was changed from a set<int> because that datatype is not thread safe
 
-    int count = 0;
+    set<int> relevantInstanceSet;
     int featureIndex, instanceIndex;
     
     for(map<int,double>::iterator it = centroid.begin(); it != centroid.end(); it++) {
@@ -124,14 +124,13 @@ int SparseMatrix::getRelevantInstanceSetByFeatureIndexAndCentroid(map<int,double
         for(int i=0; i < relevantInstance[featureIndex].size(); i++) {
                 
             instanceIndex = relevantInstance[featureIndex][i];
-            relevantInstanceSet[i] = instanceIndex;
-            count++;
+            relevantInstanceSet.insert(instanceIndex);
                 
         }
 
     }
     
-    return count;
+    return relevantInstanceSet;
     
 }
 
