@@ -105,8 +105,20 @@ set<int> SparseMatrix::getRelevantInstanceSetByFeatureIndexAndCentroid(map<int,d
     // returns the count of integers in the list
     // this was changed from a set<int> because that datatype is not thread safe
 
-    set<int> relevantInstanceSet;
+    //set<int> relevantInstanceSet;
+    int *relevantInstanceSet = NULL;
     int featureIndex, instanceIndex;
+    int count = 0;
+    
+    for(map<int,double>::iterator it = centroid.begin(); it != centroid.end(); it++) {
+        
+        for(int i=0; i < relevantInstance[featureIndex].size(); i++) {
+            count++;
+        }
+        
+    }
+    
+    relevantInstanceSet = new int[relevantInstanceSet];
     
     for(map<int,double>::iterator it = centroid.begin(); it != centroid.end(); it++) {
         
@@ -124,8 +136,8 @@ set<int> SparseMatrix::getRelevantInstanceSetByFeatureIndexAndCentroid(map<int,d
         for(int i=0; i < relevantInstance[featureIndex].size(); i++) {
                 
             instanceIndex = relevantInstance[featureIndex][i];
-            relevantInstanceSet.insert(instanceIndex);
-                
+            //relevantInstanceSet.insert(instanceIndex);
+            relevantInstanceSet[i] = instanceIndex;
         }
 
     }
