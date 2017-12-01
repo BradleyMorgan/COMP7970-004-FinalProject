@@ -19,16 +19,19 @@ int main(int argc, const char *argv[]) {
     clock_t t = clock();
     SparseMatrix a;
     kmeans b(100,100);
-    a.loadFile("./data/edges.csv", rank);
+    a.loadFile("./data/edges2.csv", rank);
     b.fit(&a);
+    
+    MPI_Barrier(MPI_COMM_WORLD);
+    
     b.solve(nprocs, rank);
     t = clock() - t;
     
     MPI_Barrier(MPI_COMM_WORLD);
     
-    if(rank == 0) {
+    //if(rank == 0) {
         dbprintf ("\n\nIt took me %ld clicks (%f seconds).\n\n",t,((float)t)/CLOCKS_PER_SEC);
-    }
+    //}
     
     MPI_Finalize();
     

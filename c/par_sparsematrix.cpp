@@ -285,7 +285,7 @@ int SparseMatrix::getRankInstanceSize() {
 }
 
 int SparseMatrix::getInstanceSize() {
-    return n_size - 1;
+    return n_size;
 }
 
 #endif

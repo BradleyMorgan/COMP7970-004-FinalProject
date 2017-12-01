@@ -19,14 +19,13 @@ void kmeans::fit(SparseMatrix* _sparseMatrix){
     
 }
 
-//void kmeans::updateCentroids(vector< map<int,double> > &centroids, int *idx, stack<int> &isolated) {
-void kmeans::updateCentroids(vector< map<int,double> > &centroids, int *idx) {
+void kmeans::updateCentroids(vector< map<int,double> > &centroids, int *idx, stack<int> &isolated) {
     
     // this function recalculates the values of each centroid
     // based on the assigned data elements
     
     int *numCluster = new int[k_cluster];
-    //memset(numCluster, 0, sizeof(int) * k_cluster);
+    memset(numCluster, 0, sizeof(int) * k_cluster);
     
     for (int i=0; i<centroids.size(); i++) {
         centroids[i].clear();
@@ -46,7 +45,7 @@ void kmeans::updateCentroids(vector< map<int,double> > &centroids, int *idx) {
     #endif
     
     if (numCluster[i] == 0 ) {
-            //centroids[i] = sparseMatrix->pickInstanceFromIsolated(isolated);
+            centroids[i] = sparseMatrix->pickInstanceFromIsolated(isolated);
         }
     }
     
@@ -99,8 +98,7 @@ void kmeans::normalizeCentroids(vector< map<int,double> > &centroids){
     
 }
 
-//double kmeans::assignCluster(vector< map<int,double> > &centroids, int * idx, stack<int> &isolated) {
-double kmeans::assignCluster(vector< map<int,double> > &centroids, int * idx) {
+double kmeans::assignCluster(vector< map<int,double> > &centroids, int * idx, stack<int> &isolated) {
     
     dbprintf("assigning clusters\n");
     
@@ -109,12 +107,12 @@ double kmeans::assignCluster(vector< map<int,double> > &centroids, int * idx) {
     int instanceIndex;
     int instanceSize = sparseMatrix->getInstanceSize();
     
-    //double * maxSimilarity = new double[instanceSize];
-    double *maxSimilarity = (double *)malloc(sizeof(double)*instanceSize);
+    double * maxSimilarity = new double[instanceSize];
+    //double *maxSimilarity = (double *)malloc(sizeof(double)*instanceSize);
     double Similarity;
     
-    //memset(idx, 0, sizeof(int) * instanceSize);
-    //memset(maxSimilarity, 0, sizeof(double)*instanceSize * 2);
+    memset(idx, 0, sizeof(int) * instanceSize);
+    memset(maxSimilarity, 0, sizeof(double)*instanceSize * 2);
     
     int *RelevantInstanceSet = (int *)malloc(sizeof(int)*instanceSize);
     
@@ -124,9 +122,9 @@ double kmeans::assignCluster(vector< map<int,double> > &centroids, int * idx) {
         
         int count = sparseMatrix->getRelevantInstanceSetByFeatureIndexAndCentroid(centroids[i], RelevantInstanceSet);
         
-	#ifdef DEBUG
-        dbprintf("got %d sets of relevant instances\n", count);
-    #endif
+        #ifdef DEBUG
+            dbprintf("got %d sets of relevant instances\n", count);
+        #endif
 
         // now we have a list of integers corresponding to edge records in the data
         // iterate through it and calculate similarity...
@@ -135,27 +133,28 @@ double kmeans::assignCluster(vector< map<int,double> > &centroids, int * idx) {
             
             instanceIndex = RelevantInstanceSet[j];
 
-#ifdef DEBUG
-    dbprintf("instanceIndex = RelavantInstanceSet[%d] = %d\n", j, RelevantInstanceSet[j]);
-#endif
+            #ifdef DEBUG
+                dbprintf("instanceIndex = RelavantInstanceSet[%d] = %d\n", j, RelevantInstanceSet[j]);
+            #endif
 
             Similarity = sparseMatrix->calculateSimilarity(instanceIndex, centroids[i]);
             
-#ifdef DEBUG
-    dbprintf("Similarity = sparseMatrix->calculateSimilarity(%d, centroids[%d]) = %d\n", instanceIndex, i, Similarity);
-#endif
+            #ifdef DEBUG
+                dbprintf("Similarity = sparseMatrix->calculateSimilarity(%d, centroids[%d]) = %f\n", instanceIndex, i, Similarity);
+            #endif
 
             // assign the largest index found so far
             
             if (Similarity > maxSimilarity[instanceIndex]){
                 
-		#ifdef DEBUG
-		#if DEBUG > 6
-                dbprintf("new similarity for instanceIndex = %d\n", instanceIndex);
-                maxSimilarity[instanceIndex] = Similarity;
+		        #ifdef DEBUG
+		        #if DEBUG > 6
+                    dbprintf("new similarity for instanceIndex = %d\n", instanceIndex);
                 #endif
-		#endif
+		        #endif
 
+                maxSimilarity[instanceIndex] = Similarity;
+                
                 idx[instanceIndex] = i;
                 
             }
@@ -164,17 +163,17 @@ double kmeans::assignCluster(vector< map<int,double> > &centroids, int * idx) {
         
     }
     
-    //while(!isolated.empty()) {
-    //    isolated.pop();
-    //}
+    while(!isolated.empty()) {
+        isolated.pop();
+    }
     
     double obj = 0;
     
     for (int i=0; i<instanceSize; i++){
         obj += maxSimilarity[i];
-    //    if (maxSimilarity[i] < 1e-9) {
-    //        isolated.push(i);
-    //    }
+        if (maxSimilarity[i] < 1e-9) {
+            isolated.push(i);
+        }
     }
     
     return obj;
@@ -196,7 +195,7 @@ void kmeans::solve(int nprocs, int rank) {
     int instanceSize = sparseMatrix->getRankInstanceSize();
     int * idx = new int[instanceSize];
     double previous_objectiveValue=0, objectiveValue, objectiveValue_difference,TOL = 0.001;
-    //stack<int> isolated = stack<int>();
+    stack<int> isolated = stack<int>();
     
     dbprintf("Start Clustering\n");
     
@@ -204,8 +203,7 @@ void kmeans::solve(int nprocs, int rank) {
         
         dbprintf("Iteration -> %d\n",iter);
         
-        //objectiveValue = assignCluster(centroids, idx, isolated);
-        objectiveValue = assignCluster(centroids, idx);
+        objectiveValue = assignCluster(centroids, idx, isolated);
         
         objectiveValue_difference = objectiveValue - previous_objectiveValue;
         
@@ -215,8 +213,7 @@ void kmeans::solve(int nprocs, int rank) {
         
         previous_objectiveValue = objectiveValue;
         
-        //updateCentroids(centroids, idx, isolated);
-        updateCentroids(centroids, idx);
+        updateCentroids(centroids, idx, isolated);
         
     }
     
